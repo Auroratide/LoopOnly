@@ -2,8 +2,9 @@
   "name": "@auroratide/looponly",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
+    "build": "tsc",
     "start": "node -r dotenv/config .",
     "deploy-commands": "node -r dotenv/config deploy-commands.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,5 +24,8 @@
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9",
     "opusscript": "^0.0.8"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.4"
   }
 }
