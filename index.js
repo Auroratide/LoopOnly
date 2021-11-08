@@ -1,7 +1,11 @@
-import { Client, Intents } from 'discord.js'
-import { config } from './config.js'
+const { Client, Intents } = require('discord.js')
+const { generateDependencyReport } = require('@discordjs/voice')
+const { joinVoiceChannel } = require('@discordjs/voice')
+const { config } = require('./config.js')
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
+console.log(generateDependencyReport())
+
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES] })
 
 client.once('ready', () => {
     console.log('ready!')
@@ -14,6 +18,16 @@ client.on('interactionCreate', async (interaction) => {
 
     if (commandName === 'ping') {
         await interaction.reply('pong!')
+    } else if (commandName === 'loop') {
+
+    } else if (commandName === 'info') {
+        const connection = joinVoiceChannel({
+            channelId: interaction.member.voice.channel.id,
+            guildId: interaction.guild.id,
+            adapterCreator: interaction.guild.voiceAdapterCreator,
+        })
+
+        await interaction.reply(`Finished`)
     }
 })
 
