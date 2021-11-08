@@ -7,4 +7,14 @@ client.once('ready', () => {
     console.log('ready!')
 })
 
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isCommand()) return;
+
+    const { commandName } = interaction
+
+    if (commandName === 'ping') {
+        await interaction.reply('pong!')
+    }
+})
+
 client.login(config.token)

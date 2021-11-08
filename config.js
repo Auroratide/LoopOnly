@@ -1,3 +1,5 @@
 export const config = {
-    token: process.env.token,
+    token: process.env.DISCORD_TOKEN,
+    client: process.env.CLIENT_ID,
+    guild: process.env.GUILD_ID,
 }
