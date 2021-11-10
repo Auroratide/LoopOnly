@@ -11,10 +11,17 @@ import { LoopOnlyError } from '../error'
 
 let resource = createAudioResource(path.join(__dirname, '..', '..', 'sample.mp3'))
 
-const players: Record<Snowflake, AudioPlayer> = {}
-const getAudioPlayer = (id: Snowflake): AudioPlayer => {
+type LoopOnlyPlayer = {
+    audio: AudioPlayer,
+}
+
+const players: Record<Snowflake, LoopOnlyPlayer> = {}
+const createLoopOnlyPlayer = () => ({
+    audio: createAudioPlayer(),
+})
+const getAudioPlayer = (id: Snowflake): LoopOnlyPlayer => {
     if (!players[id])
-        players[id] = createAudioPlayer()
+        players[id] = createLoopOnlyPlayer()
 
     return players[id]
 }
@@ -34,8 +41,8 @@ export const Loop: Command = {
             adapterCreator: interaction.guild!.voiceAdapterCreator,
         })
 
-        connection.subscribe(player)
-        player.play(resource)
+        connection.subscribe(player.audio)
+        player.audio.play(resource)
 
         await interaction.reply('Playing your song!')
     },
