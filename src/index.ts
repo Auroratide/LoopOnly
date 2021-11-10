@@ -17,7 +17,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     if (!interaction.isCommand()) return;
 
     try {
-        commands.find(c => c.name === interaction.commandName)?.execute(interaction)
+        await commands.find(c => c.name === interaction.commandName)?.execute(interaction)
         // ignore if command not known
     } catch (e) {
         if (e instanceof LoopOnlyError) {

@@ -1,33 +1,49 @@
 import type { Command } from './command'
-import type { CommandInteraction, GuildMember } from 'discord.js'
+import type { CommandInteraction, GuildMember, Snowflake } from 'discord.js'
+import type { AudioPlayer } from '@discordjs/voice'
 import * as path from 'path'
 import {
     createAudioResource,
     createAudioPlayer,
     joinVoiceChannel,
-    VoiceConnectionStatus,
 } from '@discordjs/voice'
+import { LoopOnlyError } from '../error'
 
 let resource = createAudioResource(path.join(__dirname, '..', '..', 'sample.mp3'))
-let player = createAudioPlayer()
+
+const players: Record<Snowflake, AudioPlayer> = {}
+const getAudioPlayer = (id: Snowflake): AudioPlayer => {
+    if (!players[id])
+        players[id] = createAudioPlayer()
+
+    return players[id]
+}
 
 export const Loop: Command = {
     name: 'loop',
     description: 'Loop a song!',
     execute: async (interaction: CommandInteraction) => {
+        const guildId = ensureId(interaction.guild?.id, 'Bot can only be used within a Discord Server')
+        const channelId = ensureId((interaction.member as GuildMember).voice.channel?.id, 'You must be in a voice channel to start a song.')
+
+        const player = getAudioPlayer(guildId)
+
         const connection = joinVoiceChannel({
-            channelId: (interaction.member as GuildMember).voice.channel!.id,
-            guildId: interaction.guild!.id,
+            channelId,
+            guildId,
             adapterCreator: interaction.guild!.voiceAdapterCreator,
         })
-        const subscription = connection.subscribe(player)
 
-        connection.on(VoiceConnectionStatus.Disconnected, () => {
-            subscription?.unsubscribe()
-        })
-
+        connection.subscribe(player)
         player.play(resource)
 
-        await interaction.reply(`Finished`)
+        await interaction.reply('Playing your song!')
     },
+}
+
+const ensureId = <T>(id: T | undefined | null, message: string): T => {
+    if (id != null)
+        return id
+    else
+        throw new LoopOnlyError(message)
 }
