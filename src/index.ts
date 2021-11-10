@@ -1,7 +1,9 @@
-import { Client, Intents, Interaction, GuildMember } from 'discord.js'
+import { Client, Intents, Interaction } from 'discord.js'
 import { generateDependencyReport } from '@discordjs/voice'
-import { joinVoiceChannel } from '@discordjs/voice'
+
 import { config } from './config.js'
+import { commands } from './commands'
+import { LoopOnlyError } from './error.js'
 
 console.log(generateDependencyReport())
 
@@ -14,20 +16,15 @@ client.once('ready', () => {
 client.on('interactionCreate', async (interaction: Interaction) => {
     if (!interaction.isCommand()) return;
 
-    const { commandName } = interaction
-
-    if (commandName === 'ping') {
-        await interaction.reply('pong!')
-    } else if (commandName === 'loop') {
-
-    } else if (commandName === 'info') {
-        const connection = joinVoiceChannel({
-            channelId: (interaction.member as GuildMember).voice.channel!.id,
-            guildId: interaction.guild!.id,
-            adapterCreator: interaction.guild!.voiceAdapterCreator,
-        })
-
-        await interaction.reply(`Finished`)
+    try {
+        commands.find(c => c.name === interaction.commandName)?.execute(interaction)
+        // ignore if command not known
+    } catch (e) {
+        if (e instanceof LoopOnlyError) {
+            await interaction.reply(`LoopOnly Error: ${e.message}`)
+        } else {
+            throw e
+        }
     }
 })
 
