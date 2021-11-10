@@ -3,13 +3,35 @@ import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v9'
 import { config } from './config.js'
 import { commands } from './commands'
+import { OptionType } from './commands/command'
 
-const commandBody = commands.map(command =>
-    new SlashCommandBuilder()
+type OptionBuilderBuilder = (fn: (option: OptionBuilder) => OptionBuilder) => SlashCommandBuilder
+
+type OptionBuilder = {
+    setName: (value: string) => OptionBuilder,
+    setDescription: (value: string) => OptionBuilder,
+    setRequired: (value: boolean) => OptionBuilder,
+}
+
+const optionBuilder: Record<OptionType, keyof SlashCommandBuilder> = {
+    [OptionType.string]: 'addStringOption',
+}
+
+const commandBody = commands.map(command => {
+    let builder = new SlashCommandBuilder()
         .setName(command.name)
         .setDescription(command.description)
-        .toJSON()
-    )
+    
+    Object.values(command.options ?? {}).forEach((option) => {
+        builder = ((builder[optionBuilder[option.type]] as unknown) as OptionBuilderBuilder)(it => it
+            .setName(option.name)
+            .setDescription(option.description)
+            .setRequired(option.required ?? false)
+        )
+    })
+
+    return builder.toJSON()
+})
 
 const rest = new REST({ version: '9' }).setToken(config.token)
 rest.put(Routes.applicationGuildCommands(config.client, config.guild), { body: commandBody })
