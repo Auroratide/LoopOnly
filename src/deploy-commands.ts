@@ -34,6 +34,11 @@ const commandBody = commands.map(command => {
 })
 
 const rest = new REST({ version: '9' }).setToken(config.token)
-rest.put(Routes.applicationGuildCommands(config.client, config.guild), { body: commandBody })
+
+const route = process.env.NODE_ENV === 'prod'
+    ? Routes.applicationCommands(config.client) 
+    : Routes.applicationGuildCommands(config.client, config.guild)
+
+rest.put(route, { body: commandBody })
     .then(() => console.log('Hooray! It worked.'))
     .catch(console.error)
