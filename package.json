@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node -r dotenv/config .",
     "dev": "npm run build && npm run start",
-    "deploy-commands": "node -r dotenv/config build/deploy-commands.js",
+    "deploy-commands": "npm run build && node -r dotenv/config build/deploy-commands.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": {
