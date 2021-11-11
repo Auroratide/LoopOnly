@@ -1,24 +1,52 @@
 import type { Command } from './command'
 import type { CommandInteraction, GuildMember, Snowflake } from 'discord.js'
-import type { AudioPlayer } from '@discordjs/voice'
-import * as path from 'path'
+import type { AudioPlayer, AudioResource, VoiceConnection } from '@discordjs/voice'
 import { OptionType } from './command'
 import {
     createAudioResource,
     createAudioPlayer,
     joinVoiceChannel,
+    AudioPlayerStatus,
 } from '@discordjs/voice'
 import { LoopOnlyError } from '../error'
 import * as fetch from '../fetch'
 
-type LoopOnlyPlayer = {
-    audio: AudioPlayer,
+class Song {
+    private url: string
+    constructor(url: string) {
+        this.url = url
+    }
+
+    createResource = async (): Promise<AudioResource> =>
+        createAudioResource(await fetch.audio(this.url))
+}
+
+class LoopOnlyPlayer {
+    private player: AudioPlayer
+    private song: Song | null
+
+    constructor(audio: AudioPlayer) {
+        this.player = audio
+        this.song = null
+        this.player.on(AudioPlayerStatus.Idle, this.repeat)
+    }
+
+    play = async (song: Song) => {
+        this.song = song
+        this.player.play(await song.createResource())
+    }
+
+    connectTo = (connection: VoiceConnection) => connection.subscribe(this.player)
+
+    private repeat = async () => {
+        if (this.song !== null) {
+            this.player.play(await this.song.createResource())
+        }
+    }
 }
 
 const players: Record<Snowflake, LoopOnlyPlayer> = {}
-const createLoopOnlyPlayer = () => ({
-    audio: createAudioPlayer(),
-})
+const createLoopOnlyPlayer = () => new LoopOnlyPlayer(createAudioPlayer())
 const getAudioPlayer = (id: Snowflake): LoopOnlyPlayer => {
     if (!players[id])
         players[id] = createLoopOnlyPlayer()
@@ -50,10 +78,10 @@ export const Loop: Command = {
             adapterCreator: interaction.guild!.voiceAdapterCreator,
         })
 
-        const song = createAudioResource(await fetch.audio(url))
+        const song = new Song(url)
 
-        connection.subscribe(player.audio)
-        player.audio.play(song)
+        player.connectTo(connection)
+        await player.play(song)
 
         await interaction.reply('Playing your song!')
     },
