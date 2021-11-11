@@ -5,12 +5,14 @@ import { config } from './config.js'
 import { commands } from './commands'
 import { LoopOnlyError } from './error.js'
 
-console.log(generateDependencyReport())
-
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES] })
 
 client.once('ready', () => {
-    console.log('ready!')
+    if (config.debug) {
+        console.log(generateDependencyReport())
+    }
+
+    console.log('Ready!')
 })
 
 client.on('interactionCreate', async (interaction: Interaction) => {
