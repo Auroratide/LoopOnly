@@ -2,3 +2,5 @@
 /build
 .env
 sample.mp3
+
+.DS_Store
