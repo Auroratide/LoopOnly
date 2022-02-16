@@ -5,7 +5,7 @@ import {
     joinVoiceChannel,
 } from '@discordjs/voice'
 import { ensureExistence } from '../ensure-existence'
-import { getAudioPlayer, Song } from '../players'
+import { getAudioPlayer, AudioFile, YoutubeAudio } from '../players'
 
 export const Loop: Command = {
     name: 'loop',
@@ -31,11 +31,15 @@ export const Loop: Command = {
             adapterCreator: interaction.guild!.voiceAdapterCreator,
         })
 
-        const song = new Song(url)
+        const song = /^https:\/\/www\.youtube\.com/.test(url) || /^https:\/\/youtu\.be/.test(url)
+            ? new YoutubeAudio(url)
+            : new AudioFile(url)
 
         player.connectTo(connection)
-        await player.play(song)
-
-        await interaction.reply('Playing your song!')
+        await player.play(song).then(async () => {
+            await interaction.reply('Playing your song!')
+        }).catch(async err => {
+            await interaction.reply(err.message)
+        })
     },
 }

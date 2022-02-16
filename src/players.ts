@@ -7,7 +7,11 @@ import {
 } from '@discordjs/voice'
 import * as fetch from './fetch'
 
-export class Song {
+export interface Song {
+    createResource: () => Promise<AudioResource>
+}
+
+export class AudioFile implements Song {
     private url: string
     constructor(url: string) {
         this.url = url
@@ -15,6 +19,16 @@ export class Song {
 
     createResource = async (): Promise<AudioResource> =>
         createAudioResource(await fetch.audio(this.url))
+}
+
+export class YoutubeAudio implements Song {
+    private url: string
+    constructor(url: string) {
+        this.url = url
+    }
+
+    createResource = async (): Promise<AudioResource> =>
+        createAudioResource(await fetch.youtube(this.url))
 }
 
 export class LoopOnlyPlayer {

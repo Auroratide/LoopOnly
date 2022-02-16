@@ -1,6 +1,7 @@
 import * as stream from 'stream'
 import fetch from 'node-fetch'
 import { LoopOnlyError } from './error'
+import ytdl from 'ytdl-core'
 
 export const audio = async (url: string): Promise<stream.Readable> => {
     const res = await fetch(url).catch(() => {
@@ -17,4 +18,17 @@ export const audio = async (url: string): Promise<stream.Readable> => {
     }
 
     return stream.Readable.from(res.body!)
+}
+
+export const youtube = async (url: string): Promise<stream.Readable> => {
+    let info = await ytdl.getInfo(url)
+    let format = ytdl.chooseFormat(info.formats, { quality: 140 })
+    if (format) {
+        return ytdl(url, {
+            format: format,
+            highWaterMark: 1 << 25,
+        })
+    } else {
+        throw new LoopOnlyError('Video not available')
+    }
 }
