@@ -4,6 +4,7 @@ import { generateDependencyReport } from '@discordjs/voice'
 import { config } from './config.js'
 import { commands } from './commands'
 import { LoopOnlyError } from './error.js'
+import { disconnect } from './commands/disconnect.js'
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] })
 
@@ -23,9 +24,11 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         // ignore if command not known
     } catch (e) {
         if (e instanceof LoopOnlyError) {
-            await interaction.reply(`LoopOnly Error: ${e.message}`)
+            await interaction.reply(e.message)
         } else {
-            throw e
+            console.error(e)
+            await disconnect(interaction)
+            await interaction.reply('LoopOnly encountered a fatal error and had to disconnect.')
         }
     }
 })
