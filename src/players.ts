@@ -38,11 +38,12 @@ export class LoopOnlyPlayer {
     constructor(audio: AudioPlayer) {
         this.player = audio
         this.song = null
-        this.player.on(AudioPlayerStatus.Idle, this.repeat)
     }
 
     play = async (song: Song) => {
         this.song = song
+        this.stop()
+        this.player.on(AudioPlayerStatus.Idle, this.repeat)
         this.player.play(await song.createResource())
     }
 
