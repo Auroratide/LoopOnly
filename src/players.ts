@@ -56,6 +56,11 @@ export class LoopOnlyPlayer {
 
     connectTo = (connection: VoiceConnection) => connection.subscribe(this.player)
 
+    stop = () => {
+        this.player.removeAllListeners()
+        this.player.stop()
+    }
+
     private repeat = async () => {
         if (this.song !== null) {
             this.player.play(await this.song.createResource())
