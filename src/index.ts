@@ -1,11 +1,11 @@
-import { Client, Intents, Interaction } from 'discord.js'
+import { Client, GatewayIntentBits, Interaction } from 'discord.js'
 import { generateDependencyReport } from '@discordjs/voice'
 
 import { config } from './config.js'
 import { commands } from './commands'
 import { LoopOnlyError } from './error.js'
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES] })
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] })
 
 client.once('ready', () => {
     if (config.debug) {

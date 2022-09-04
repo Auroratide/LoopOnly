@@ -21,7 +21,7 @@ export const Loop: Command = {
     execute: async (interaction: CommandInteraction) => {
         const guildId = ensureExistence(interaction.guild?.id, 'Bot can only be used within a Discord Server')
         const channelId = ensureExistence((interaction.member as GuildMember).voice.channel?.id, 'You must be in a voice channel to start a song.')
-        const url = ensureExistence(interaction.options.getString(Loop.options!.url.name), 'Url is a required option.')
+        const url = ensureExistence(interaction.options.get(Loop.options!.url.name), 'Url is a required option.').value as string
 
         const player = getAudioPlayer(guildId)
 
